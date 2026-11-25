@@ -1,0 +1,9 @@
+# Decisions
+
+The implementation follows the required core product path: OIDC authorization-code login with PKCE; workspace membership from the identity-provider claims; MongoDB-backed conversations, messages, sessions and webhook deduplication; HMAC/timestamp validation for Pigeon; Redis-coordinated send rate limiting and cross-instance WebSocket fan-out; and a durable outbox using Pigeon's idempotency key to make uncertain retries safe. Conversation claims use a conditional MongoDB update so only one agent can hold a conversation. WebSocket events are persisted with workspace sequence numbers so reconnecting clients can replay missed changes.
+
+Private notes are available to authenticated members of the same workspace. They are not end-to-end encrypted; the brief describes E2E encryption as an optional reviewed track and it was not attempted. Billing through Paybox and Elasticsearch search were also cut to prioritize the core inbox and reliability levels. `past_due` billing behavior and seat reduction policies therefore do not apply.
+
+Assumptions: a valid workspace is one of the two workspaces configured by the supplied Pigeon contract; all members of a workspace may read conversations and notes; a conversation's ordering is based on its latest inbound activity; and replies are queued before provider delivery, with provider status webhooks determining the final state.
+
+Known limitations to verify: this environment could not install project dependencies or start the Docker services, so the automated harness has not been run here. The full check must be run on a machine with Node 22, MongoDB, Redis and the simulators available. The browser UI is intentionally focused on the core inbox rather than search, billing, or encrypted-note key management. Export the actual AI-session transcript into `ai-logs/` before submission; no transcript has been fabricated.
